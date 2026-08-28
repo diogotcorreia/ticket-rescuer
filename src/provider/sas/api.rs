@@ -85,7 +85,7 @@ pub(super) struct Passenger {
     pub id: String,
     pub first_name: String,
     pub last_name: String,
-    pub title: String,
+    pub title: Option<String>,
 }
 
 #[derive(Deserialize, Debug)]

@@ -124,8 +124,13 @@ fn generate_boarding_pass(
         destination_label: flight_segment.arrival.airport_name.clone(),
         destination_code: flight_segment.arrival.airport_code.clone(),
         passenger_name: format!(
-            "{} {} {}",
-            passenger.title, passenger.first_name, passenger.last_name
+            "{}{} {}",
+            passenger
+                .title
+                .as_deref()
+                .map_or(String::new(), |t| format!("{t} ")),
+            passenger.first_name,
+            passenger.last_name
         ),
         boarding_zone: passenger_flight_segment.boarding_zone.clone(),
         boarding_number: format!("BN{}", passenger_flight_segment.boarding_number.clone()),
