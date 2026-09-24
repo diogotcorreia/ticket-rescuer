@@ -1,5 +1,6 @@
 [package]
-name = "flysas-pkpass"
+name = "ticket-rescuer"
+description = "Fetch tickets and boarding passes from companies that refuse to provide them in a proper format"
 version = "0.1.0"
 edition = "2021"
 
