@@ -1,34 +1,35 @@
 use base64::Engine;
+use inquire::Text;
 
 use crate::{
     pkpass::{BoardingPass, Color, PkpassOptions},
-    provider::{sas::api::BoardingPassDto, Provider},
+    provider::{sas::api::BoardingPassDto, ProviderResult, ProviderTrait},
 };
 
 mod api;
 
 pub struct FlysasProvider;
 
-impl Provider for FlysasProvider {
-    fn start() -> BoardingPass {
-        let stdin = std::io::stdin();
-        println!("Booking Reference:");
-        let mut booking_reference = String::new();
-        stdin.read_line(&mut booking_reference).unwrap();
-        println!("Last Name:");
-        let mut last_name = String::new();
-        stdin.read_line(&mut last_name).unwrap();
+impl ProviderTrait for FlysasProvider {
+    fn start() -> Vec<ProviderResult> {
+        let booking_reference = Text::new("Booking reference")
+            .prompt()
+            .expect("failed to prompt for booking reference");
+        let last_name = Text::new("Last name")
+            .prompt()
+            .expect("failed to prompt for last name");
 
         let boarding_pass_dto = api::get_boarding_pass(&booking_reference, &last_name);
 
         let passenger_flight_segments = get_all_passenger_flight_segments(&boarding_pass_dto);
 
         // TODO: support more than one boarding pass
-        generate_boarding_pass(
+        let pass = generate_boarding_pass(
             &boarding_pass_dto,
             &passenger_flight_segments[0].0,
             &passenger_flight_segments[0].1,
-        )
+        );
+        vec![ProviderResult::BoardingPass(pass)]
     }
 
     fn get_display_name() -> &'static str {

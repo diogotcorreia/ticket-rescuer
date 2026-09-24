@@ -1,25 +1,34 @@
-use std::{fs::File, path::Path};
+use std::{fs::File, io::Write, path::Path};
 
 use crate::{
     pkpass::generate_pkpass,
-    provider::{sas::FlysasProvider, Provider},
+    provider::{prompt_provider, ProviderResult},
 };
 
 mod pkpass;
 mod provider;
 
 fn main() {
-    // TODO: support more providers
-    println!("Provider: {}", FlysasProvider::get_display_name());
-    let boarding_pass = FlysasProvider::start();
+    let provider = prompt_provider();
+    let results = provider.start();
 
-    let mut package = generate_pkpass(&boarding_pass, &FlysasProvider::get_pkpass_options());
-
-    let pass_name = format!(
-        "{}_{}.pkpass",
-        &boarding_pass.flight_number, &boarding_pass.passenger_name
-    );
-    let path = Path::new(&pass_name);
-    let file = File::create(path).expect("failed to create file");
-    package.write(file).unwrap();
+    for result in results {
+        match result {
+            ProviderResult::File { name, contents } => {
+                let path = Path::new(&name);
+                let mut file = File::create(path).expect("failed to create file");
+                let bytes = contents();
+                file.write_all(&bytes).expect("failed to write file");
+                println!("Saved file to {path:#?}")
+            }
+            ProviderResult::BoardingPass(boarding_pass) => {
+                let name = boarding_pass.get_file_name();
+                let mut package = generate_pkpass(&boarding_pass, &provider.get_pkpass_options());
+                let path = Path::new(&name);
+                let file = File::create(path).expect("failed to create file");
+                package.write(file).expect("failed to write file");
+                println!("Saved file to {path:#?}")
+            }
+        }
+    }
 }

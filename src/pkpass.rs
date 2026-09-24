@@ -22,6 +22,19 @@ pub struct PkpassOptions {
     pub background_color: Color,
 }
 
+impl PkpassOptions {
+    pub fn dummy() -> Self {
+        Self {
+            organization_name: "",
+            description: "",
+            pass_type_identifier: "",
+            label_color: Color(0, 0, 0),
+            foreground_color: Color(0, 0, 0),
+            background_color: Color(0, 0, 0),
+        }
+    }
+}
+
 impl From<&PkpassOptions> for PassConfig {
     fn from(value: &PkpassOptions) -> Self {
         PassConfig {
@@ -161,4 +174,13 @@ pub struct BoardingPass {
     pub arrival: String,
     pub frequent_flyer: String,
     pub barcode_data: String,
+}
+
+impl BoardingPass {
+    pub fn get_file_name(&self) -> String {
+        format!(
+            "{}_{}_{}.pkpass",
+            self.flight_number, self.passenger_name, self.departure_date
+        )
+    }
 }
